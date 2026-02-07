@@ -31,6 +31,8 @@ export type ClientToServerEvents = {
   "session:init": (payload: SessionInitPayload, ack: (user: User) => void) => void;
   "chat:open": (payload: { peerId: UserId }, ack: (messages: Message[]) => void) => void;
   "message:send": (payload: { toId: UserId; text: string }) => void;
+  "typing:start": (payload: { toId: UserId }) => void;
+  "typing:stop": (payload: { toId: UserId }) => void;
 };
 
 export type ServerToClientEvents = {
@@ -39,6 +41,8 @@ export type ServerToClientEvents = {
   "chat:history": (messages: Message[]) => void;
   "message:new": (message: Message) => void;
   "presence:update": (payload: { userId: UserId; online: boolean }) => void;
+  "typing:start": (payload: { fromId: UserId; toId: UserId }) => void;
+  "typing:stop": (payload: { fromId: UserId; toId: UserId }) => void;
 };
 
 export type InterServerEvents = Record<string, never>;

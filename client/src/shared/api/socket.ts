@@ -1,6 +1,6 @@
 import { io, Socket } from "socket.io-client";
 import type { Message } from "../../entities/message/model";
-import type { User } from "../../entities/user/model";
+import type { User, UserId } from "../../entities/user/model";
 import { SOCKET_URL } from "../config/constants";
 
 export type SessionInitPayload = {
@@ -19,6 +19,8 @@ export type ClientToServerEvents = {
     ack: (messages: Message[]) => void
   ) => void;
   "message:send": (payload: { toId: string; text: string }) => void;
+  "typing:start": (payload: { toId: UserId }) => void;
+  "typing:stop": (payload: { toId: UserId }) => void;
 };
 
 export type ServerToClientEvents = {
@@ -27,6 +29,8 @@ export type ServerToClientEvents = {
   "chat:history": (messages: Message[]) => void;
   "message:new": (message: Message) => void;
   "presence:update": (payload: { userId: string; online: boolean }) => void;
+  "typing:start": (payload: { fromId: UserId; toId: UserId }) => void;
+  "typing:stop": (payload: { fromId: UserId; toId: UserId }) => void;
 };
 
 let socket: Socket<ServerToClientEvents, ClientToServerEvents> | null = null;

@@ -104,6 +104,15 @@ const sendToUser = (userId: UserId, message: Message): void => {
   io.to(user.socketId).emit("message:new", message);
 };
 
+const emitTyping = (toId: UserId, fromId: UserId, isTyping: boolean): void => {
+  const user = users.get(toId);
+  if (!user?.socketId) return;
+  io.to(user.socketId).emit(isTyping ? "typing:start" : "typing:stop", {
+    fromId,
+    toId,
+  });
+};
+
 const handleBotReply = (botId: UserId, fromUserId: UserId, text: string): void => {
   if (botId === BOT_IDS.ignore) return;
   if (botId === BOT_IDS.spam) return;
@@ -120,14 +129,21 @@ const handleBotReply = (botId: UserId, fromUserId: UserId, text: string): void =
   }
 
   if (botId === BOT_IDS.reverse) {
+    emitTyping(fromUserId, botId, true);
     setTimeout(() => {
       respond(text.split("").reverse().join(""));
+      emitTyping(fromUserId, botId, false);
     }, 3000);
   }
 };
 
 const activateSpamForUser = (userId: UserId): void => {
+  if (spamActivatedUserIds.has(userId)) return;
   spamActivatedUserIds.add(userId);
+  const spamText = `Spam message ${Math.floor(Math.random() * 900 + 100)}`;
+  const spamMessage = createMessage(BOT_IDS.spam, userId, spamText);
+  storeMessage(spamMessage);
+  sendToUser(userId, spamMessage);
 };
 
 const scheduleSpam = (): void => {
@@ -194,6 +210,7 @@ io.on("connection", (socket) => {
     storeMessage(message);
     sendToUser(currentUserId, message);
     sendToUser(toId, message);
+    emitTyping(toId, currentUserId, false);
 
     if (toId === BOT_IDS.spam) {
       activateSpamForUser(currentUserId);
@@ -202,6 +219,20 @@ io.on("connection", (socket) => {
     if (botById.has(toId)) {
       handleBotReply(toId, currentUserId, trimmed);
     }
+  });
+
+  socket.on("typing:start", ({ toId }) => {
+    const currentUserId = socket.data.userId;
+    if (!currentUserId) return;
+    if (!users.has(toId)) return;
+    emitTyping(toId, currentUserId, true);
+  });
+
+  socket.on("typing:stop", ({ toId }) => {
+    const currentUserId = socket.data.userId;
+    if (!currentUserId) return;
+    if (!users.has(toId)) return;
+    emitTyping(toId, currentUserId, false);
   });
 
   socket.on("disconnect", () => {

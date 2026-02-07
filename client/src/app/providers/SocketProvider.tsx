@@ -37,6 +37,7 @@ export const SocketProvider = ({ children }: PropsWithChildren) => {
   const appendMessage = useChatStore((state) => state.appendMessage);
   const setMessagesForChat = useChatStore((state) => state.setMessagesForChat);
   const updatePresence = useChatStore((state) => state.updatePresence);
+  const setTypingStatus = useChatStore((state) => state.setTypingStatus);
   const setConnectionStatus = useChatStore(
     (state) => state.setConnectionStatus
   );
@@ -75,6 +76,7 @@ export const SocketProvider = ({ children }: PropsWithChildren) => {
     ) => {
       const key = buildChatKey(message.fromId, message.toId);
       appendMessage(key, message);
+      setTypingStatus(key, message.fromId, false);
     };
 
     const onChatHistory = (
@@ -86,6 +88,20 @@ export const SocketProvider = ({ children }: PropsWithChildren) => {
       setMessagesForChat(key, history);
     };
 
+    const onTypingStart = (
+      payload: Parameters<ServerToClientEvents["typing:start"]>[0]
+    ) => {
+      const key = buildChatKey(payload.fromId, payload.toId);
+      setTypingStatus(key, payload.fromId, true);
+    };
+
+    const onTypingStop = (
+      payload: Parameters<ServerToClientEvents["typing:stop"]>[0]
+    ) => {
+      const key = buildChatKey(payload.fromId, payload.toId);
+      setTypingStatus(key, payload.fromId, false);
+    };
+
     socket.on("connect", onConnect);
     socket.on("disconnect", onDisconnect);
     socket.on("contacts:list", onContacts);
@@ -93,6 +109,8 @@ export const SocketProvider = ({ children }: PropsWithChildren) => {
     socket.on("presence:update", onPresenceUpdate);
     socket.on("message:new", onMessageNew);
     socket.on("chat:history", onChatHistory);
+    socket.on("typing:start", onTypingStart);
+    socket.on("typing:stop", onTypingStop);
 
     return () => {
       socket.off("connect", onConnect);
@@ -102,6 +120,8 @@ export const SocketProvider = ({ children }: PropsWithChildren) => {
       socket.off("presence:update", onPresenceUpdate);
       socket.off("message:new", onMessageNew);
       socket.off("chat:history", onChatHistory);
+      socket.off("typing:start", onTypingStart);
+      socket.off("typing:stop", onTypingStop);
       socket.disconnect();
     };
   }, [
@@ -110,6 +130,7 @@ export const SocketProvider = ({ children }: PropsWithChildren) => {
     setContacts,
     setCurrentUser,
     setMessagesForChat,
+    setTypingStatus,
     socket,
     updatePresence,
   ]);

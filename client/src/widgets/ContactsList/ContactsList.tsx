@@ -23,12 +23,8 @@ export const ContactsList = () => {
     });
 
   return (
-    <aside className="flex h-full min-h-0 w-full flex-col border-l border-slate-200 bg-white">
+    <aside className="flex h-full min-h-0 w-full flex-col border-t border-slate-200 bg-white md:border-t-0 md:border-l">
       <div className="p-4">
-        <div className="flex items-center justify-between text-sm font-semibold text-slate-700">
-          <span>Contacts</span>
-          <span className="text-xs text-slate-400">{filtered.length}</span>
-        </div>
         <div className="mt-3 flex flex-col gap-3">
           <ContactsSearch />
           <OnlineToggle />

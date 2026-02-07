@@ -9,6 +9,7 @@ type ChatState = {
   contacts: User[];
   activeChatId: UserId | null;
   messagesByChat: MessagesByChat;
+  typingByChat: Record<string, UserId[]>;
   onlineOnly: boolean;
   searchQuery: string;
   connectionStatus: ConnectionStatus;
@@ -17,6 +18,7 @@ type ChatState = {
   setActiveChatId: (chatId: UserId | null) => void;
   setMessagesForChat: (chatKey: string, messages: Message[]) => void;
   appendMessage: (chatKey: string, message: Message) => void;
+  setTypingStatus: (chatKey: string, userId: UserId, isTyping: boolean) => void;
   setOnlineOnly: (value: boolean) => void;
   setSearchQuery: (value: string) => void;
   setConnectionStatus: (value: ConnectionStatus) => void;
@@ -28,6 +30,7 @@ export const useChatStore = create<ChatState>()((set) => ({
   contacts: [],
   activeChatId: null,
   messagesByChat: {},
+  typingByChat: {},
   onlineOnly: false,
   searchQuery: "",
   connectionStatus: "disconnected",
@@ -50,6 +53,28 @@ export const useChatStore = create<ChatState>()((set) => ({
           [chatKey]: [...list, message],
         },
       };
+    }),
+  setTypingStatus: (chatKey, userId, isTyping) =>
+    set((state) => {
+      const current = state.typingByChat[chatKey] ?? [];
+      if (isTyping) {
+        if (current.includes(userId)) return state;
+        return {
+          typingByChat: {
+            ...state.typingByChat,
+            [chatKey]: [...current, userId],
+          },
+        };
+      }
+      if (!current.includes(userId)) return state;
+      const next = current.filter((id) => id !== userId);
+      const nextMap = { ...state.typingByChat };
+      if (next.length === 0) {
+        delete nextMap[chatKey];
+        return { typingByChat: nextMap };
+      }
+      nextMap[chatKey] = next;
+      return { typingByChat: nextMap };
     }),
   setOnlineOnly: (value) => set({ onlineOnly: value }),
   setSearchQuery: (value) => set({ searchQuery: value }),
