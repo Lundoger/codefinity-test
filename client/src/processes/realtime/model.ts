@@ -10,6 +10,7 @@ type ChatState = {
   activeChatId: UserId | null;
   messagesByChat: MessagesByChat;
   typingByChat: Record<string, UserId[]>;
+  presenceById: Record<UserId, boolean>;
   onlineOnly: boolean;
   searchQuery: string;
   connectionStatus: ConnectionStatus;
@@ -31,11 +32,24 @@ export const useChatStore = create<ChatState>()((set) => ({
   activeChatId: null,
   messagesByChat: {},
   typingByChat: {},
+  presenceById: {},
   onlineOnly: false,
   searchQuery: "",
   connectionStatus: "disconnected",
   setCurrentUser: (user) => set({ currentUser: user }),
-  setContacts: (contacts) => set({ contacts }),
+  setContacts: (contacts) =>
+    set((state) => {
+      const presenceById = { ...state.presenceById };
+      const merged = contacts.map((contact) => {
+        const known = presenceById[contact.id];
+        if (known === undefined) {
+          presenceById[contact.id] = contact.isOnline;
+          return contact;
+        }
+        return { ...contact, isOnline: known };
+      });
+      return { contacts: merged, presenceById };
+    }),
   setActiveChatId: (chatId) => set({ activeChatId: chatId }),
   setMessagesForChat: (chatKey, messages) =>
     set((state) => ({
@@ -81,6 +95,7 @@ export const useChatStore = create<ChatState>()((set) => ({
   setConnectionStatus: (value) => set({ connectionStatus: value }),
   updatePresence: (userId, online) =>
     set((state) => ({
+      presenceById: { ...state.presenceById, [userId]: online },
       contacts: state.contacts.map((contact) =>
         contact.id === userId ? { ...contact, isOnline: online } : contact
       ),
