@@ -28,7 +28,7 @@ export const ContactsSidebar = () => {
           />
           <div
             id="contacts-sidebar-panel"
-            className="absolute bottom-0 right-0 flex h-[70vh] w-full flex-col rounded-t-2xl bg-white shadow-xl"
+            className="absolute right-0 bottom-0 flex h-[70vh] w-full flex-col rounded-t-2xl bg-white shadow-xl"
           >
             <div className="flex items-center justify-between border-b border-slate-200 px-4 py-3">
               <span className="text-sm font-semibold text-slate-700">
@@ -48,7 +48,7 @@ export const ContactsSidebar = () => {
           </div>
         </div>
       )}
-      <div className="hidden md:block">
+      <div className="hidden h-full md:block">
         <ContactsList />
       </div>
     </div>
