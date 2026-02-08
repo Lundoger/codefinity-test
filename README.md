@@ -34,9 +34,9 @@ pnpm build
 ```
 
 ## Run with Docker
+Use Docker Compose to start the whole app:
 ```bash
-docker build -t chat-mvp .
-docker run -p 5173:5173 -p 3000:3000 chat-mvp
+docker compose up
 ```
 
 ## Env vars
