@@ -24,13 +24,10 @@ export const ContactsList = () => {
 
   return (
     <aside className="flex h-full min-h-0 w-full flex-col border-t border-slate-200 bg-white md:border-t-0 md:border-l">
-      <div className="p-4">
-        <div className="mt-3 flex flex-col gap-3">
-          <ContactsSearch />
-          <OnlineToggle />
-        </div>
+      <div className="order-first border-b border-slate-200 p-4">
+        <OnlineToggle />
       </div>
-      <div className="min-h-0 flex-1 overflow-y-auto">
+      <div className="order-last min-h-0 flex-1 overflow-y-auto md:order-first">
         {filtered.length === 0 ? (
           <div className="px-4 py-6 text-sm text-slate-400">
             No contacts found
@@ -73,6 +70,9 @@ export const ContactsList = () => {
             ))}
           </ul>
         )}
+      </div>
+      <div className="order-last border-t border-slate-200 p-4">
+        <ContactsSearch />
       </div>
     </aside>
   );
